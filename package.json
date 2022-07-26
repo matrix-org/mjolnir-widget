@@ -27,6 +27,6 @@
     "pack:dev": "webpack --mode development --devtool source-map",
     "pack:prod": "webpack --mode production"
   },
-  "author": "jesopo",
-  "license": "MIT"
+  "author": "The Matrix.org Foundation C.I.C.",
+  "license": "Apache-2.0"
 }
