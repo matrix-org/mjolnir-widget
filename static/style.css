@@ -1,0 +1,28 @@
+.divflex {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.divflex > * {
+  flex-grow: 0;
+  margin-bottom: 8px;
+}
+
+.divflex > :first-child {
+  flex-grow: 2;
+}
+
+#advanced,
+#reuseMjolnir {
+  display: none;
+}
+
+button {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+li {
+  cursor: pointer;
+}
