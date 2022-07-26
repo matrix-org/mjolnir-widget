@@ -1,6 +1,10 @@
 import { IInviteCallback, MjolnirBackend } from "./backend";
 
-export class SubmitCreate {
+interface IAction<T> {
+  submit(): Promise<T>;
+}
+
+export class SubmitCreate implements IAction<string> {
   constructor(
     private backend: MjolnirBackend,
     private input: HTMLInputElement
@@ -10,7 +14,7 @@ export class SubmitCreate {
   }
 }
 
-export class SubmitReuse {
+export class SubmitReuse implements IAction<boolean> {
   constructor(
     private backend: MjolnirBackend,
     private mxid: string,
