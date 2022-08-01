@@ -2,6 +2,7 @@ import { IOpenIDCredentials, WidgetApi } from "matrix-widget-api";
 
 import { SubmitCreate, SubmitReuse } from "./action";
 import { IInviteCallback, MjolnirBackend } from "./backend";
+import { assertParam, parseFragment } from "./utils";
 
 class MjolnirWidget {
   private backend: MjolnirBackend;
@@ -14,14 +15,14 @@ class MjolnirWidget {
     this.backend = new MjolnirBackend(backend, creds, this.invite);
   }
 
-  public async init() {
+  public async init(): Promise<boolean> {
     const createButtonView = document.getElementById("createMjolnir");
     const advancedButtonView = document.getElementById("showAdvanced");
     const managementRoomView = document.getElementById(
       "managementRoom"
     ) as HTMLInputElement;
     if (!createButtonView || !advancedButtonView) {
-      return;
+      return false;
     }
 
     (createButtonView as HTMLButtonElement).disabled = false;
@@ -33,6 +34,8 @@ class MjolnirWidget {
     advancedButtonView.onclick = this.advanced.bind(this);
 
     await this.populateExisting();
+
+    return true;
   }
 
   private async populateExisting() {
@@ -104,16 +107,58 @@ async function getOpenId(api: WidgetApi): Promise<IOpenIDCredentials | null> {
   }
 }
 
+class Params {
+  constructor(public userId: string, public widgetId: string) {}
+
+  public static from_fragment(): Params {
+    const fragment = parseFragment();
+    const userId = assertParam(fragment, "userId");
+    const widgetId = assertParam(fragment, "widgetId");
+
+    if (userId === null || widgetId === null) {
+      throw new Error("missing required param");
+    }
+
+    return new Params(userId, widgetId);
+  }
+}
+
+interface PowerLevels {
+  content: {
+    users: {
+      [mxid: string]: string;
+    };
+  };
+}
+
 (function () {
-  const api = new WidgetApi(undefined);
+  const params = Params.from_fragment();
+  const api = new WidgetApi(params.widgetId);
+
   api.start();
   api.requestCapabilityToSendState("m.room.member");
+  api.requestCapabilityToReceiveState("m.room.power_levels");
+
   api.on("ready", async function () {
+    const events = (await api.readStateEvents(
+      "m.room.power_levels",
+      1,
+      undefined,
+      undefined
+    )) as PowerLevels[];
+
+    if (events.length === 0) {
+      return;
+    } else if (!(params.userId in events[0].content.users)) {
+      return;
+    }
+
     const creds = await getOpenId(api);
     if (!creds) {
       return;
     }
 
-    new MjolnirWidget(api, creds, "https://127.0.0.1").init();
+    let widget = new MjolnirWidget(api, creds, "https://127.0.0.1");
+    await widget.init();
   });
 })();
