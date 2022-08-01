@@ -126,7 +126,7 @@ class Params {
 interface PowerLevels {
   content: {
     users: {
-      [mxid: string]: string;
+      [mxid: string]: number;
     };
   };
 }
@@ -149,7 +149,7 @@ interface PowerLevels {
 
     if (events.length === 0) {
       return;
-    } else if (!(params.userId in events[0].content.users)) {
+    } else if ((events[0].content.users[params.userId] ?? 0) <= 0) {
       return;
     }
 
