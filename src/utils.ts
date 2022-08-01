@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+export function delay(ms: number): Promise<undefined> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /*
  * copied and ported from
  * https://github.com/matrix-org/matrix-widget-api/blob/bcaad5155e05565bc7c882e3fdbc8af217514a10/examples/widget/utils.js

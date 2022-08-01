@@ -1,4 +1,5 @@
 import { MjolnirBackend } from "./backend";
+import { WithLoader } from "./ui";
 
 interface IAction<T> {
   submit(): Promise<T>;
@@ -15,7 +16,10 @@ export class SubmitCreate implements IAction<boolean> {
     private invite: IInviteCallback
   ) {}
   public async submit() {
-    const mxid = await this.backend.submitCreate(this.input.value);
+    const mxid = await new WithLoader(
+      this.backend.submitCreate(this.input.value),
+      0.5
+    ).apply();
     return await this.invite(mxid);
   }
 }
@@ -27,7 +31,10 @@ export class SubmitReuse implements IAction<boolean> {
     private invite: IInviteCallback
   ) {}
   public async submit() {
-    const existing = await this.backend.getExisting(this.mxid);
+    const existing = await new WithLoader(
+      this.backend.getExisting(this.mxid),
+      0.5
+    ).apply();
     return await this.invite(this.mxid);
   }
 }

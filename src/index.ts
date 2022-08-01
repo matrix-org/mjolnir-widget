@@ -26,11 +26,13 @@ class MjolnirWidget {
     }
 
     (createButtonView as HTMLButtonElement).disabled = false;
-    createButtonView.onclick = new SubmitCreate(
+
+    const submitCreate = new SubmitCreate(
       this.backend,
       managementRoomView,
       this.invite
-    ).submit;
+    );
+    createButtonView.onclick = submitCreate.submit.bind(submitCreate);
 
     advancedButtonView.onclick = this.advanced.bind(this);
 
@@ -63,11 +65,14 @@ class MjolnirWidget {
 
     for (const mjolnirName of existingMjolnirs) {
       const existingMjolnirView = document.createElement("li");
-      existingMjolnirView.onclick = new SubmitReuse(
+
+      const submitReuse = new SubmitReuse(
         this.backend,
         mjolnirName,
         this.invite
-      ).submit;
+      );
+      existingMjolnirView.onclick = submitReuse.submit.bind(submitReuse);
+
       existingMjolnirView.textContent = mjolnirName;
       existingMjolnirsView.appendChild(existingMjolnirView);
     }
