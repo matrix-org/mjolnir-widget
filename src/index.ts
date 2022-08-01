@@ -88,7 +88,7 @@ class MjolnirWidget {
     }
   }
 
-  public async invite(mxid: string, roomId: string): Promise<boolean> {
+  public async invite(mxid: string): Promise<boolean> {
     await this.api.sendStateEvent("m.room.member", mxid, {
       membership: "invite",
     });

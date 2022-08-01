@@ -2,7 +2,7 @@ import { IOpenIDCredentials } from "matrix-widget-api";
 import $ from "jquery";
 
 export interface IInviteCallback {
-  (mxid: string, roomId: string): Promise<boolean>;
+  (mxid: string): Promise<boolean>;
 }
 
 export class MjolnirBackend {
@@ -30,7 +30,7 @@ export class MjolnirBackend {
       "json"
     );
 
-    this.invite(result.mxid, managementRoom);
+    this.invite(result.mxid);
 
     return result.mxid;
   }

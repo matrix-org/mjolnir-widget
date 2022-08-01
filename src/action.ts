@@ -22,6 +22,6 @@ export class SubmitReuse implements IAction<boolean> {
   ) {}
   public async submit() {
     const existing = await this.backend.getExisting(this.mxid);
-    return await this.invite(this.mxid, existing.managementRoom);
+    return await this.invite(this.mxid);
   }
 }
