@@ -1,16 +1,22 @@
-import { IInviteCallback, MjolnirBackend } from "./backend";
+import { MjolnirBackend } from "./backend";
 
 interface IAction<T> {
   submit(): Promise<T>;
 }
 
-export class SubmitCreate implements IAction<string> {
+export interface IInviteCallback {
+  (mxid: string): Promise<boolean>;
+}
+
+export class SubmitCreate implements IAction<boolean> {
   constructor(
     private backend: MjolnirBackend,
-    private input: HTMLInputElement
+    private input: HTMLInputElement,
+    private invite: IInviteCallback
   ) {}
   public async submit() {
-    return this.backend.submitCreate(this.input.value);
+    const mxid = await this.backend.submitCreate(this.input.value);
+    return await this.invite(mxid);
   }
 }
 

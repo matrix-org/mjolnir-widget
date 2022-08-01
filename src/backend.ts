@@ -1,16 +1,8 @@
 import { IOpenIDCredentials } from "matrix-widget-api";
 import $ from "jquery";
 
-export interface IInviteCallback {
-  (mxid: string): Promise<boolean>;
-}
-
 export class MjolnirBackend {
-  constructor(
-    private backend: string,
-    private creds: IOpenIDCredentials,
-    private invite: IInviteCallback
-  ) {}
+  constructor(private backend: string, private creds: IOpenIDCredentials) {}
 
   public async listExisting(): Promise<string[]> {
     return (
@@ -29,9 +21,6 @@ export class MjolnirBackend {
       },
       "json"
     );
-
-    this.invite(result.mxid);
-
     return result.mxid;
   }
 

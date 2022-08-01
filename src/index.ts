@@ -1,7 +1,7 @@
 import { IOpenIDCredentials, WidgetApi } from "matrix-widget-api";
 
-import { SubmitCreate, SubmitReuse } from "./action";
-import { IInviteCallback, MjolnirBackend } from "./backend";
+import { IInviteCallback, SubmitCreate, SubmitReuse } from "./action";
+import { MjolnirBackend } from "./backend";
 import { assertParam, parseFragment } from "./utils";
 
 class MjolnirWidget {
@@ -12,7 +12,7 @@ class MjolnirWidget {
     creds: IOpenIDCredentials,
     backend: string
   ) {
-    this.backend = new MjolnirBackend(backend, creds, this.invite);
+    this.backend = new MjolnirBackend(backend, creds);
   }
 
   public async init(): Promise<boolean> {
@@ -28,7 +28,8 @@ class MjolnirWidget {
     (createButtonView as HTMLButtonElement).disabled = false;
     createButtonView.onclick = new SubmitCreate(
       this.backend,
-      managementRoomView
+      managementRoomView,
+      this.invite
     ).submit;
 
     advancedButtonView.onclick = this.advanced.bind(this);
