@@ -3,11 +3,13 @@ import { IOpenIDCredentials, WidgetApi } from "matrix-widget-api";
 import { IInviteCallback, SubmitCreate, SubmitReuse } from "./action";
 import { MjolnirBackend } from "./backend";
 import { assertParam, parseFragment } from "./utils";
+import { View } from "./view";
 
 class MjolnirWidget {
   private backend: MjolnirBackend;
 
   constructor(
+    private view: View,
     private api: WidgetApi,
     creds: IOpenIDCredentials,
     backend: string
@@ -16,25 +18,15 @@ class MjolnirWidget {
   }
 
   public async init(): Promise<boolean> {
-    const createButtonView = document.getElementById("createMjolnir");
-    const advancedButtonView = document.getElementById("showAdvanced");
-    const managementRoomView = document.getElementById(
-      "managementRoom"
-    ) as HTMLInputElement;
-    if (!createButtonView || !advancedButtonView) {
-      return false;
-    }
-
-    (createButtonView as HTMLButtonElement).disabled = false;
+    this.view.create.submit.disabled = false;
 
     const submitCreate = new SubmitCreate(
       this.backend,
-      managementRoomView,
+      this.view.createAdvanced.room,
       this.invite
     );
-    createButtonView.onclick = submitCreate.submit.bind(submitCreate);
-
-    advancedButtonView.onclick = this.advanced.bind(this);
+    this.view.create.submit.onclick = submitCreate.submit.bind(submitCreate);
+    this.view.createAdvanced.toggle.onclick = this.advanced.bind(this);
 
     await this.populateExisting();
 
@@ -42,25 +34,10 @@ class MjolnirWidget {
   }
 
   private async populateExisting() {
-    const reuseContainerView = document.getElementById("reuseMjolnir");
-    if (!reuseContainerView) {
-      return;
-    }
-
     const existingMjolnirs = await this.backend.listExisting();
 
-    if (!existingMjolnirs) {
-      return;
-    }
-
-    const existingMjolnirsView = document.getElementById("existingMjolnirs");
-    if (!existingMjolnirsView) {
-      return;
-    }
-
-    var existingMjolnirView;
-    while (existingMjolnirsView.firstChild) {
-      existingMjolnirsView.removeChild(existingMjolnirsView.firstChild);
+    while (this.view.reuse.list.firstChild) {
+      this.view.reuse.list.removeChild(this.view.reuse.list.firstChild);
     }
 
     for (const mjolnirName of existingMjolnirs) {
@@ -74,23 +51,18 @@ class MjolnirWidget {
       existingMjolnirView.onclick = submitReuse.submit.bind(submitReuse);
 
       existingMjolnirView.textContent = mjolnirName;
-      existingMjolnirsView.appendChild(existingMjolnirView);
+      this.view.reuse.list.appendChild(existingMjolnirView);
     }
 
-    reuseContainerView.style.display =
-      existingMjolnirs.length > 0 ? "initial" : "none";
+    this.view.reuse.container.style.display =
+      existingMjolnirs.length > 0 ? "block" : "none";
   }
 
   private advanced() {
-    const advanced = document.getElementById("advanced");
-    if (!advanced) {
-      return;
-    }
-
-    if (advanced.style.display !== "initial") {
-      advanced.style.display = "initial";
+    if (this.view.createAdvanced.room.style.display !== "block") {
+      this.view.createAdvanced.room.style.display = "block";
     } else {
-      advanced.style.display = "none";
+      this.view.createAdvanced.room.style.display = "none";
     }
   }
 
@@ -146,6 +118,8 @@ interface PowerLevels {
   api.requestCapabilityToReceiveState("m.room.power_levels");
 
   api.on("ready", async function () {
+    const view = View.from_document();
+
     const events = (await api.readStateEvents(
       "m.room.power_levels",
       1,
@@ -153,18 +127,27 @@ interface PowerLevels {
       undefined
     )) as PowerLevels[];
 
-    if (events.length === 0) {
-      return;
-    } else if ((events[0].content.users[params.userId] ?? 0) <= 0) {
+    if (
+      events.length === 0 ||
+      (events[0].content.users[params.userId] ?? 0) <= 0
+    ) {
+      view.unauthorised.container.style.display = "initial";
       return;
     }
+
+    view.create.container.style.display = "block";
 
     const creds = await getOpenId(api);
     if (!creds) {
       return;
     }
 
-    let widget = new MjolnirWidget(api, creds, "https://127.0.0.1");
+    let widget = new MjolnirWidget(
+      view,
+      api,
+      creds,
+      "https://husky.lolnerd.net/jess/widget"
+    );
     await widget.init();
   });
 })();

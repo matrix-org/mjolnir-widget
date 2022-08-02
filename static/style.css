@@ -4,6 +4,7 @@ body {
 
 .body {
   margin: 8px;
+  display: none;
 }
 
 .divflex {
@@ -21,8 +22,7 @@ body {
   flex-grow: 2;
 }
 
-#advanced,
-#reuseMjolnir {
+#createAdvancedRoom {
   display: none;
 }
 
