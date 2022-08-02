@@ -43,11 +43,7 @@ class MjolnirWidget {
     for (const mjolnirName of existingMjolnirs) {
       const existingMjolnirView = document.createElement("li");
 
-      const submitReuse = new SubmitReuse(
-        this.backend,
-        mjolnirName,
-        this.invite
-      );
+      const submitReuse = new SubmitReuse(mjolnirName, this.invite);
       existingMjolnirView.onclick = submitReuse.submit.bind(submitReuse);
 
       existingMjolnirView.textContent = mjolnirName;

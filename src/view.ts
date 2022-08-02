@@ -25,13 +25,13 @@ class CreateAdvancedView {
 class CreateView {
   constructor(
     public container: HTMLElement,
-    public submit: HTMLButtonElement,
+    public submit: HTMLButtonElement
   ) {}
 
   public static from_document(): CreateView {
     return new CreateView(
       document.getElementById("create")!,
-      document.getElementById("createSubmit")! as HTMLButtonElement,
+      document.getElementById("createSubmit")! as HTMLButtonElement
     );
   }
 }

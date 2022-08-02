@@ -25,16 +25,8 @@ export class SubmitCreate implements IAction<boolean> {
 }
 
 export class SubmitReuse implements IAction<boolean> {
-  constructor(
-    private backend: MjolnirBackend,
-    private mxid: string,
-    private invite: IInviteCallback
-  ) {}
+  constructor(private mxid: string, private invite: IInviteCallback) {}
   public async submit() {
-    const existing = await new WithLoader(
-      this.backend.getExisting(this.mxid),
-      0.5
-    ).apply();
-    return await this.invite(this.mxid);
+    return await new WithLoader(this.invite(this.mxid), 0.5).apply();
   }
 }
