@@ -22,8 +22,8 @@ class MjolnirWidget {
 
     const submitCreate = new SubmitCreate(
       this.backend,
-      this.view.createAdvanced.room,
-      this.invite
+      () => this.view.createAdvanced.room.value,
+      this.invite.bind(this)
     );
     this.view.create.submit.onclick = submitCreate.submit.bind(submitCreate);
     this.view.createAdvanced.toggle.onclick = this.advanced.bind(this);
@@ -43,7 +43,14 @@ class MjolnirWidget {
     for (const mjolnirName of existingMjolnirs) {
       const existingMjolnirView = document.createElement("li");
 
-      const submitReuse = new SubmitReuse(mjolnirName, this.invite);
+      const submitReuse = new SubmitReuse(
+        mjolnirName,
+        (
+          (e) => () =>
+            (e.style.color = "#00ff00")
+        )(existingMjolnirView),
+        this.invite.bind(this)
+      );
       existingMjolnirView.onclick = submitReuse.submit.bind(submitReuse);
 
       existingMjolnirView.textContent = mjolnirName;

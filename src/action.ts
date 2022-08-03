@@ -9,15 +9,23 @@ export interface IInviteCallback {
   (mxid: string): Promise<boolean>;
 }
 
+export interface IGetRoom {
+  (): string;
+}
+
+export interface IReuseComplete {
+  (): void;
+}
+
 export class SubmitCreate implements IAction<boolean> {
   constructor(
     private backend: MjolnirBackend,
-    private input: HTMLInputElement,
+    private room: IGetRoom,
     private invite: IInviteCallback
   ) {}
   public async submit() {
     const mxid = await new WithLoader(
-      this.backend.submitCreate(this.input.value),
+      this.backend.submitCreate(this.room()),
       0.5
     ).apply();
     return await this.invite(mxid);
@@ -25,8 +33,14 @@ export class SubmitCreate implements IAction<boolean> {
 }
 
 export class SubmitReuse implements IAction<boolean> {
-  constructor(private mxid: string, private invite: IInviteCallback) {}
+  constructor(
+    private mxid: string,
+    private complete: IReuseComplete,
+    private invite: IInviteCallback
+  ) {}
   public async submit() {
-    return await new WithLoader(this.invite(this.mxid), 0.5).apply();
+    const result = await new WithLoader(this.invite(this.mxid), 0.5).apply();
+    this.complete();
+    return result;
   }
 }
