@@ -45,10 +45,7 @@ class MjolnirWidget {
 
       const submitReuse = new SubmitReuse(
         mjolnirName,
-        (
-          (e) => () =>
-            (e.style.color = "#00ff00")
-        )(existingMjolnirView),
+        () => (existingMjolnirView.style.color = "#00ff00"),
         this.invite.bind(this)
       );
       existingMjolnirView.onclick = submitReuse.submit.bind(submitReuse);
