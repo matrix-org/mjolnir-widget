@@ -7,7 +7,7 @@ export class MjolnirBackend {
   public async listExisting(): Promise<string[]> {
     return (
       (await $.getJSON(`${this.backend}/list`, {
-        openId: this.creds,
+        openId: this.creds.access_token,
       })) || []
     );
   }
@@ -16,7 +16,7 @@ export class MjolnirBackend {
     const result: { mxid: string } = await $.post(
       `${this.backend}/create`,
       {
-        openId: this.creds,
+        openId: this.creds.access_token,
         roomId: managementRoom,
       },
       "json"
@@ -28,7 +28,7 @@ export class MjolnirBackend {
     const result: { managementRoom: string } = await $.getJSON(
       `${this.backend}/get`,
       {
-        openId: this.creds,
+        openId: this.creds.access_token,
         mxid: mxid,
       }
     );
