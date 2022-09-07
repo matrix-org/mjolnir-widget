@@ -12,16 +12,35 @@ export class MjolnirBackend {
     );
   }
 
-  public async submitCreate(managementRoom: string): Promise<string> {
-    const result: { mxid: string } = await $.post(
-      `${this.backend}/create`,
-      {
+  public async submitCreate(roomId: string): Promise<string> {
+    const result: { mxid: string } = await $.ajax({
+      url: `${this.backend}/create`,
+      type: "POST",
+      data: JSON.stringify({
         openId: this.creds.access_token,
-        roomId: managementRoom,
+        roomId: roomId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
       },
-      "json"
-    );
+    });
     return result.mxid;
+  }
+
+  public async submitJoin(mxid: string, roomId: string): Promise<boolean> {
+    await $.ajax({
+      url: `${this.backend}/join`,
+      type: "POST",
+      data: JSON.stringify({
+        openId: this.creds.access_token,
+        mxid: mxid,
+        roomId: roomId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return true;
   }
 
   public async getExisting(mxid: string): Promise<{ managementRoom: string }> {
