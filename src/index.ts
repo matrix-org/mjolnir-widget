@@ -11,6 +11,7 @@ class MjolnirWidget {
   constructor(
     private view: View,
     private api: WidgetApi,
+    private roomId: string,
     creds: IOpenIDCredentials,
     backend: string
   ) {
@@ -22,12 +23,10 @@ class MjolnirWidget {
 
     const submitCreate = new SubmitCreate(
       this.backend,
-      () => this.view.createAdvanced.room.value,
+      this.roomId,
       this.invite.bind(this)
     );
     this.view.create.submit.onclick = submitCreate.submit.bind(submitCreate);
-    this.view.createAdvanced.toggle.onclick = this.advanced.bind(this);
-
     await this.populateExisting();
 
     return true;
@@ -58,14 +57,6 @@ class MjolnirWidget {
       existingMjolnirs.length > 0 ? "block" : "none";
   }
 
-  private advanced() {
-    if (this.view.createAdvanced.room.style.display !== "block") {
-      this.view.createAdvanced.room.style.display = "block";
-    } else {
-      this.view.createAdvanced.room.style.display = "none";
-    }
-  }
-
   public async invite(mxid: string): Promise<boolean> {
     await this.api.sendStateEvent("m.room.member", mxid, {
       membership: "invite",
@@ -86,18 +77,30 @@ async function getOpenId(api: WidgetApi): Promise<IOpenIDCredentials | null> {
 }
 
 class Params {
-  constructor(public userId: string, public widgetId: string) {}
+  constructor(
+    public userId: string,
+    public widgetId: string,
+    public roomId: string,
+    public api: string
+  ) {}
 
   public static from_fragment(): Params {
     const fragment = parseFragment();
     const userId = assertParam(fragment, "userId");
     const widgetId = assertParam(fragment, "widgetId");
+    const roomId = assertParam(fragment, "roomId");
+    const api = assertParam(fragment, "api");
 
-    if (userId === null || widgetId === null) {
+    if (
+      userId === null ||
+      widgetId === null ||
+      roomId === null ||
+      api === null
+    ) {
       throw new Error("missing required param");
     }
 
-    return new Params(userId, widgetId);
+    return new Params(userId, widgetId, roomId, api);
   }
 }
 
@@ -142,12 +145,7 @@ interface PowerLevels {
       return;
     }
 
-    let widget = new MjolnirWidget(
-      view,
-      api,
-      creds,
-      "https://husky.lolnerd.net/jess/widget"
-    );
+    let widget = new MjolnirWidget(view, api, params.roomId, creds, params.api);
     await widget.init();
   });
 })();
