@@ -5,6 +5,14 @@ import { MjolnirBackend } from "./backend";
 import { assertParam, parseFragment } from "./utils";
 import { View } from "./view";
 
+interface PowerLevels {
+  content: {
+    users: {
+      [mxid: string]: number;
+    };
+  };
+}
+
 class MjolnirWidget {
   private backend: MjolnirBackend;
 
@@ -24,7 +32,11 @@ class MjolnirWidget {
     const submitCreate = new SubmitCreate(
       this.backend,
       this.roomId,
-      this.invite.bind(this)
+      async (mxid: string) => {
+        await this.promote(mxid);
+        await this.invite(mxid);
+        return true;
+      }
     );
     this.view.create.submit.onclick = submitCreate.submit.bind(submitCreate);
     await this.populateExisting();
@@ -61,6 +73,23 @@ class MjolnirWidget {
     await this.api.sendStateEvent("m.room.member", mxid, {
       membership: "invite",
     });
+
+    //TODO: false if it failed
+    return true;
+  }
+
+  public async promote(mxid: string): Promise<boolean> {
+    const powerLevels = (
+      (await this.api.readStateEvents(
+        "m.room.power_levels",
+        1,
+        undefined,
+        undefined
+      )) as PowerLevels[]
+    )[0].content;
+    powerLevels.users[mxid] = 100;
+
+    await this.api.sendStateEvent("m.room.power_levels", "", powerLevels);
 
     //TODO: false if it failed
     return true;
@@ -104,20 +133,13 @@ class Params {
   }
 }
 
-interface PowerLevels {
-  content: {
-    users: {
-      [mxid: string]: number;
-    };
-  };
-}
-
 (function () {
   const params = Params.from_fragment();
   const api = new WidgetApi(params.widgetId);
 
   api.start();
   api.requestCapabilityToSendState("m.room.member");
+  api.requestCapabilityToSendState("m.room.power_levels");
   api.requestCapabilityToReceiveState("m.room.power_levels");
 
   api.on("ready", async function () {
